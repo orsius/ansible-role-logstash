@@ -1,0 +1,27 @@
+node.name: {{ logstash_nodename }}
+
+{{ logstash_config | to_nice_yaml }}
+
+{% if logstash_extra_config is defined and logstash_extra_config != "" %}
+{{ logstash_extra_config | to_nice_yaml }}
+{% endif %}
+
+# pipeline.workers: 2
+# pipeline.output.workers: 1
+# pipeline.batch.size: 125
+# pipeline.batch.delay: 5
+# pipeline.unsafe_shutdown: false
+{% if logstash_config_reload_automatic is defined and logstash_config_reload_automatic == true %}
+config.reload.automatic: true
+{% else %}
+# config.reload.automatic: true
+{% endif %}
+# config.reload.interval: 3
+
+{% if logstash_xpack_monitoring %}
+{% for key, val in logstash_xpack_monitoring_config.items() %}
+{% if val is defined and val != "" %}
+{{ { key: val } | to_nice_yaml -}}
+{% endif %}
+{% endfor %}
+{% endif %}

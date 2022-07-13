@@ -1,0 +1,5 @@
+tests/
+**/.vagrant/
+.vagrant/
+*.log
+*.retry

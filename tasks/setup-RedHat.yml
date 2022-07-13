@@ -1,0 +1,9 @@
+---
+- name: add elasticsearch repository
+  yum_repository:
+    name: "elasticsearch-{{ es_major_version }}"
+    description: "elasticsearch-{{ es_major_version }}"
+    baseurl: "{{ es_yum_repo }}"
+    gpgkey: "{{ es_yum_gpg }}"
+    gpgcheck: "{{ es_yum_gpgcheck }}"
+  when: es_yum_repo != ""

@@ -1,0 +1,4 @@
+---
+# vars file for ansible-role-logstash
+lg_conf_dir: "/etc/logstash"
+lg_heap_size: "{{ '2' if ansible_memtotal_mb < 2048 else ( ansible_memtotal_mb / 1024 - 1) | int }}g"

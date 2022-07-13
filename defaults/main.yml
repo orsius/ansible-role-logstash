@@ -1,0 +1,57 @@
+---
+logstash_service: logstash
+logstash_bin: /usr/share/logstash/bin/logstash
+logstash_plugin_bin: /usr/share/logstash/bin/logstash-plugin
+
+logstash_nodename: "{{ ansible_hostname }}"
+
+# be sure you have some configuration in the configuration directory
+# otherwise logstash will go berserk and log 1K message by second with
+# No config files found in path {:path=>"/etc/logstash/conf.d/*"}
+logstash_enable_service: no
+
+logstash_version: "7.5.1"
+logstash_package: "{{ ( 'logstash=' +  logstash_version ) if logstash_version is defined else 'logstash' }}"
+logstash_package_debian: "{{ ( 'logstash=1:' +  logstash_version + '-1' ) if logstash_version is defined else 'logstash' }}"
+
+es_major_version: "7.x"
+es_yum_repo: "https://artifacts.elastic.co/packages/{{ es_major_version }}/yum"
+es_yum_gpg: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+es_yum_gpgcheck: "yes"
+
+es_apt_repo: "deb https://artifacts.elastic.co/packages/{{ es_major_version }}/apt stable main"
+es_apt_gpg: "{{ es_yum_gpg }}"
+
+logstash_log_format: plain
+# TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+logstash_log_level: WARN
+
+logstash_path_data: /var/lib/logstash
+logstash_path_logs: /var/log/logstash
+logstash_path_config: /etc/logstash/conf.d
+logstash_config_reload_automatic: false
+logstash_config_reload_interval: "30s"
+
+logstash_xpack_enable: false
+
+logstash_xpack_monitoring: false
+logstash_xpack_monitoring_es_url: http://localhost:9200/
+logstash_xpack_monitoring_es_username: "logstash_system"
+logstash_xpack_monitoring_es_password: "${logstash_system}"
+
+logstash_xpack_monitoring_config:
+  xpack.monitoring.enabled: "{{ logstash_xpack_monitoring | bool }}"
+  xpack.monitoring.elasticsearch.hosts: "{{ logstash_xpack_monitoring_es_url }}"
+  xpack.monitoring.elasticsearch.username: "{{ logstash_xpack_monitoring_es_username }}"
+  xpack.monitoring.elasticsearch.password: "{{ logstash_xpack_monitoring_es_password }}"
+
+lg_user: logstash
+lg_group: logstash
+logstash_config:
+  path.data: "{{ logstash_path_data }}"
+  path.logs: "{{ logstash_path_logs }}"
+  #  path.config: "{{ logstash_path_config }}"
+  config.reload.automatic: "{{ logstash_config_reload_automatic }}"
+  config.reload.interval: "{{ logstash_config_reload_interval }}"
+
+logstash_extra_config: ""

@@ -1,0 +1,14 @@
+---
+- name: ensure dependency is installed
+  apt: name=apt-transport-https state=present
+
+- name: add elasticsearch apt key
+  apt_key:
+    url: "{{ es_apt_gpg }}"
+    state: present
+
+- name: add elasticserach repository
+  apt_repository:
+    repo: '{{ es_apt_repo }}'
+    state: present
+    update_cache: yes

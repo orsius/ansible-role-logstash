@@ -1,0 +1,74 @@
+---
+- name: fetching java version
+  shell: "java -version"
+  register: _t_java_version
+  failed_when: False
+  changed_when: False
+
+- name: is the java binary present in PATH
+  assert:
+    that: _t_java_version.rc == 0
+    msg: "no java binary found"
+
+- include_tasks: "setup-{{ ansible_os_family }}.yml"
+
+- name: "installing {{ logstash_package | regex_replace('=', '-') }} - RedHat"
+  yum:
+    name: "{{ logstash_package | regex_replace('=', '-') }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: "installing {{ logstash_package_debian }} - Debian"
+  apt:
+    name: "{{ logstash_package_debian }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: /etc/logstash/logstash.yml
+  template:
+    src: logstash.yml.j2
+    dest: /etc/logstash/logstash.yml
+  notify: restart logstash
+
+- name: /etc/logstash/log4j2.properties
+  template:
+    src: log4j2.properties.j2
+    dest: /etc/logstash/log4j2.properties
+  notify: restart logstash
+
+- name: /etc/systemd/system/logstash.service
+  template:
+    src: logstash.service.j2
+    dest: "/etc/systemd/system/{{ logstash_service }}.service"
+  register: logstash_systemd_unit
+
+- name: reload systemd
+  shell: systemctl daemon-reload
+  when: logstash_systemd_unit.changed
+
+- name: check x-pack plugin presence
+  shell: "{{ logstash_plugin_bin }} list | grep -q '^x-pack$'"
+  register: _logstash_plugin_xpack
+  failed_when: False
+  changed_when: False
+  become_user: logstash
+  when: logstash_xpack_enable | bool
+
+- name: install x-pack plugin
+  shell: "{{ logstash_plugin_bin }} install x-pack"
+  become_user: logstash
+  when:
+    - logstash_xpack_enable | bool
+    - _logstash_plugin_xpack.rc != 0
+
+- name: ensure logstash is started and enabled at boot
+  service:
+    name: "{{ logstash_service }}"
+    state: started
+    enabled: yes
+  when: logstash_enable_service | bool
+
+- name: include logstash-config.yml
+  include: logstash-config.yml
+  tags:
+      - config

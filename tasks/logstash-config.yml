@@ -1,0 +1,10 @@
+- name: Copy jvm.options File for Instance
+  become: yes
+  template: src=jvm.options.j2 dest={{lg_conf_dir}}/jvm.options owner={{ lg_user }} group={{ lg_group }} mode=0644 force=yes
+  notify: restart logstash
+
+#- name: include logstash-plugins.yml
+#  include: logstash-plugins.yml
+#  when: lg_plugins is defined or lg_plugins_reinstall
+#  tags:
+#      - plugins
